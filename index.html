@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reserva tu cita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2D5BFF; --on:#FFFFFF; --surf:#FFFFFF; --surf-ink:#141414; --acc:#FFD60A; --acc-ink:#141414;
+  --font:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--on);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.wrap{max-width:480px;margin:0 auto;padding:16px 18px 150px}
+
+/* Encabezado */
+.head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.logo{width:48px;height:48px;border-radius:14px;background:var(--surf);color:var(--surf-ink);display:grid;place-items:center;font-weight:900;font-size:22px;overflow:hidden;flex:none}
+.logo img{width:100%;height:100%;object-fit:cover;background:#fff}
+.head .nm{flex:1;min-width:0}
+.head .nm strong{display:block;font-weight:800;font-stretch:112%;font-size:18px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head .nm span{font-size:13.5px;opacity:.8}
+.mode{display:flex;border:2px solid var(--on);border-radius:999px;padding:2px;flex:none}
+.mode a{padding:6px 11px;border-radius:999px;font-size:12.5px;font-weight:700;text-decoration:none}
+.mode a[aria-current="page"]{background:var(--on);color:var(--bg)}
+
+.prog{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 22px}
+.prog i{height:6px;border-radius:6px;background:var(--on);opacity:.25;transition:opacity .25s}
+.prog i.on{opacity:1}
+.back{background:none;border:0;padding:0;font-weight:700;font-size:15px;cursor:pointer;opacity:.85;margin-bottom:10px;display:inline-flex;align-items:center;gap:6px}
+.kick{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 6px}
+h1.q{font-weight:900;font-stretch:118%;font-size:clamp(32px,9vw,42px);line-height:1;letter-spacing:-.02em;margin:0 0 22px}
+
+/* Tarjetas de servicio */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{position:relative;background:var(--surf);color:var(--surf-ink);border:3px solid transparent;border-radius:22px;padding:16px 14px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:150px;transition:transform .12s}
+.card:active{transform:scale(.97)}
+.card .ic{font-size:30px;line-height:1}
+.card strong{font-weight:800;font-stretch:105%;font-size:16.5px;line-height:1.2}
+.card small{opacity:.7;font-size:13.5px}
+.card .pr{margin-top:auto;font-weight:900;font-size:20px}
+.card[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.card[aria-pressed="true"]::after{content:"✓";position:absolute;top:10px;right:12px;width:26px;height:26px;border-radius:50%;background:var(--acc-ink);color:var(--acc);display:grid;place-items:center;font-weight:900;font-size:14px}
+
+/* Estilistas */
+.people{display:grid;gap:10px}
+.person{display:flex;align-items:center;gap:14px;width:100%;background:var(--surf);color:var(--surf-ink);border:0;border-radius:22px;padding:14px;cursor:pointer;text-align:left}
+.person .av{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:22px;flex:none;background:var(--bg);color:var(--on)}
+.person strong{display:block;font-weight:800;font-size:18px}
+.person small{opacity:.7}
+.person[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.person[aria-pressed="true"] .av{background:var(--acc-ink);color:var(--acc)}
+
+/* Fecha y hora */
+.days{display:flex;gap:8px;overflow-x:auto;margin:0 -18px 20px;padding:2px 18px 6px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;width:66px;padding:10px 0;border-radius:18px;background:var(--surf);color:var(--surf-ink);border:0;text-align:center;cursor:pointer}
+.day small{display:block;font-size:12px;font-weight:700;opacity:.7;text-transform:capitalize}
+.day strong{display:block;font-size:24px;font-weight:900;line-height:1.1}
+.day[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.day:disabled{opacity:.35;cursor:not-allowed}
+.label{font-weight:800;font-size:15px;margin:0 0 10px}
+.times{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.time{padding:12px 0;border-radius:14px;background:var(--surf);color:var(--surf-ink);border:0;font-weight:800;font-size:15px;cursor:pointer}
+.time[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink)}
+.time:disabled{background:transparent;color:var(--on);opacity:.35;text-decoration:line-through;cursor:not-allowed;outline:2px dashed var(--on);outline-offset:-2px}
+.hint{font-size:14px;opacity:.8;margin:12px 0 0}
+
+/* Formulario */
+.form{background:var(--surf);color:var(--surf-ink);border-radius:24px;padding:18px}
+label{display:block;font-weight:800;font-size:14.5px;margin:0 0 6px}
+input,textarea{width:100%;padding:14px 15px;border-radius:14px;border:2px solid currentColor;background:transparent;margin-bottom:14px;font-size:16px}
+input::placeholder,textarea::placeholder{color:inherit;opacity:.45}
+textarea{min-height:130px;resize:vertical;line-height:1.5}
+.resume{border-radius:18px;padding:14px 16px;margin-top:2px;border:2px dashed currentColor;font-size:14.5px}
+.resume strong{font-weight:800}
+
+/* Barra inferior */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--bg);padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -14px 24px -10px var(--bg)}
+.bar .in{max-width:444px;margin:0 auto}
+.bar .sum{font-size:13.5px;text-align:center;opacity:.85;margin:0 0 8px;min-height:19px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px;border-radius:18px;border:0;background:var(--acc);color:var(--acc-ink);font-weight:900;font-stretch:110%;font-size:18px;cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.alt{background:transparent;color:var(--on);border:3px solid var(--on)}
+.btn+.btn{margin-top:10px}
+
+/* Confirmación */
+.done{text-align:center;padding:12px 0 0}
+.done .big{width:110px;height:110px;margin:0 auto 18px;border-radius:32px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-size:56px;font-weight:900;animation:pop .5s cubic-bezier(.2,1.5,.4,1) both;transform:rotate(-6deg)}
+@keyframes pop{from{transform:scale(.3) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(-6deg);opacity:1}}
+.done h1{font-weight:900;font-stretch:118%;font-size:36px;line-height:1.02;margin:0 0 8px}
+.done p{margin:0;opacity:.85}
+.pass{background:var(--surf);color:var(--surf-ink);border-radius:24px;margin:22px 0 16px;text-align:left;overflow:hidden}
+.pass .top{background:var(--acc);color:var(--acc-ink);padding:16px 18px}
+.pass .top strong{display:block;font-weight:900;font-stretch:110%;font-size:22px;line-height:1.1}
+.pass .top span{font-weight:600;text-transform:capitalize}
+.pass .rows{padding:6px 18px 10px}
+.pass .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:2px dashed currentColor}
+.pass .row:last-child{border-bottom:0}
+.pass .row span{opacity:.7}
+.pass .row strong{font-weight:800;text-align:right}
+
+/* Panel */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.st{background:var(--surf);color:var(--surf-ink);border-radius:18px;padding:12px}
+.st:first-child{background:var(--acc);color:var(--acc-ink)}
+.st strong{display:block;font-weight:900;font-size:22px;line-height:1.1}
+.st small{display:block;font-size:12px;opacity:.75;line-height:1.25;margin-top:3px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -18px 14px;padding:2px 18px 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:9px 16px;border-radius:999px;border:2px solid var(--on);background:transparent;font-weight:800;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--on);color:var(--bg)}
+.appt{background:var(--surf);color:var(--surf-ink);border-radius:22px;padding:14px;margin-bottom:10px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.appt .t{font-weight:900;font-stretch:110%;font-size:22px;line-height:1}
+.appt .t small{display:block;font-size:12px;font-weight:700;opacity:.6;font-stretch:100%;margin-top:3px}
+.appt .w strong{display:block;font-weight:800;font-size:17px}
+.appt .w small{opacity:.7}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:12.5px;font-weight:800;padding:3px 10px;border-radius:999px;border:2px solid currentColor}
+.acts{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.mini{padding:9px 14px;border-radius:12px;border:2px solid currentColor;background:transparent;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none}
+.mini.main{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.empty{text-align:center;padding:26px 14px;border-radius:22px;border:2px dashed var(--on);opacity:.85}
+.share{margin-top:18px}
+
+/* Generador */
+.gen .form+.form{margin-top:12px}
+.sw{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 12px}
+.sw button{width:38px;height:38px;border-radius:12px;border:2px solid currentColor;cursor:pointer;padding:0}
+.sw button[aria-pressed="true"]{outline:3px solid currentColor;outline-offset:2px}
+.pick{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.pick input[type=color]{width:52px;height:48px;padding:0;border:0;margin:0;background:none;flex:none}
+.pick input[type=text]{margin:0;text-transform:uppercase}
+.preview{border-radius:18px;padding:16px;margin:4px 0 6px;display:flex;flex-direction:column;gap:10px}
+.preview .pb{padding:13px;border-radius:14px;text-align:center;font-weight:900}
+.cstatus{font-size:13.5px;font-weight:700;margin:0 0 14px}
+.out{word-break:break-all;font-size:13px;border:2px dashed currentColor;border-radius:14px;padding:12px;margin:0 0 14px}
+
+.toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--surf);color:var(--surf-ink);padding:11px 18px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.step-in{animation:in .28s ease-out both}
+@keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.step-in,.done .big{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="bar" id="bar" hidden></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== Demo por defecto ===== */
+const DEFAULT = {
+  nombre: "Navaja & Tijera",
+  lugar: "Peluquería y barbería",
+  whatsapp: "", anticipo: 0,
+  color: "2D5BFF", acento: "",
+  estilistas: ["Ana","Luis","Sofi"],
+  servicios: [["Corte de dama",60,300],["Corte de caballero",30,180],["Arreglo de barba",30,120],["Tinte completo",120,900],["Mechas o balayage",180,1500],["Peinado para evento",60,450]]
+};
+
+/* ===== Color y contraste automático ===== */
+const hx = h => { h = h.replace("#",""); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
+const toHex = a => "#" + a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,"0")).join("").toUpperCase();
+const rl = h => { const [r,g,b] = hx(h).map(v=>{ v/=255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); }); return .2126*r+.7152*g+.0722*b; };
+const ratio = (a,b) => { const x = rl(a), y = rl(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); };
+const best = bg => ratio(bg,"#FFFFFF") >= ratio(bg,"#141414") ? "#FFFFFF" : "#141414";
+function hsl(h){ let [r,g,b] = hx(h).map(v=>v/255); const mx=Math.max(r,g,b), mn=Math.min(r,g,b); let H=0,S=0,L=(mx+mn)/2;
+  if (mx!==mn){ const d=mx-mn; S = L>.5 ? d/(2-mx-mn) : d/(mx+mn); H = mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4; H*=60; } return [H,S,L]; }
+function fromHsl(H,S,L){ const c=(1-Math.abs(2*L-1))*S, x=c*(1-Math.abs((H/60)%2-1)), m=L-c/2;
+  const [R,G,B] = H<60?[c,x,0]:H<120?[x,c,0]:H<180?[0,c,x]:H<240?[0,x,c]:H<300?[x,0,c]:[c,0,x]; return toHex([(R+m)*255,(G+m)*255,(B+m)*255]); }
+function autoAcento(bg){
+  const [H,S] = hsl(bg);
+  const sat = S < .15 ? 0 : Math.max(.85, S);
+  const hues = sat ? [(H+180)%360,(H+150)%360,(H+210)%360,(H+120)%360] : [50,330,190];
+  let pick = null, mejor = 0;
+  for (const h of hues) for (const L of [.55,.62,.48,.7,.4,.78,.32]){
+    const c = fromHsl(h, sat || .95, L), r = ratio(c,bg);
+    if (r >= 3.2 && ratio(c, best(c)) >= 4.5) return c;
+    if (r > mejor){ mejor = r; pick = c; }
+  }
+  return mejor >= 3 ? pick : best(bg);
+}
+function tema(bgHex, acHex){
+  const bg = "#" + bgHex.toUpperCase(), on = best(bg);
+  const surf = on === "#FFFFFF" ? "#FFFFFF" : "#141414";
+  let acc = acHex ? "#" + acHex.toUpperCase() : "";
+  let accAuto = false;
+  if (!acc || ratio(acc,bg) < 3 || ratio(acc,surf) < 1.25){ acc = autoAcento(bg); accAuto = !!acHex; }
+  return { bg, on, surf, surfInk: best(surf), acc, accInk: best(acc), ajustado: accAuto, contraste: ratio(acc,bg) };
+}
+
+/* ===== Configuración desde el link ===== */
+function logoUrl(v){ v = (v||"").trim(); if (!v || v.length > 400) return "";
+  if (/^https:\/\/[^\s"'<>]+$/i.test(v)) return v;
+  if (/^[\w.-]+\.(png|jpe?g|webp|gif|svg)$/i.test(v)) return "logos/" + v; return ""; }
+const isHex = v => /^[0-9a-fA-F]{6}$/.test(v||"");
+function leerConfig(){
+  const p = new URLSearchParams(location.search), cfg = JSON.parse(JSON.stringify(DEFAULT));
+  if (p.get("n")) cfg.nombre = p.get("n").slice(0,40);
+  if (p.get("l")) cfg.lugar = p.get("l").slice(0,80);
+  if (p.get("w")) cfg.whatsapp = p.get("w").replace(/\D/g,"").slice(0,13);
+  if (p.get("a") && !isNaN(+p.get("a"))) cfg.anticipo = Math.max(0, Math.round(+p.get("a")));
+  if (isHex(p.get("c"))) cfg.color = p.get("c");
+  if (isHex(p.get("k"))) cfg.acento = p.get("k");
+  cfg.logo = logoUrl(p.get("i"));
+  if (p.get("e") !== null){ const e = p.get("e").split("|").map(x=>x.trim().slice(0,20)).filter(Boolean).slice(0,8); cfg.estilistas = e; }
+  if (p.get("s")){ const arr = p.get("s").split("|").map(x=>x.split("~")).filter(x=>x[0] && +x[1]>0 && +x[2]>=0)
+      .map(x=>[x[0].slice(0,40), Math.round(+x[1]), Math.round(+x[2])]).slice(0,14); if (arr.length) cfg.servicios = arr; }
+  return cfg;
+}
+const CFG = leerConfig();
+const T = tema(CFG.color, CFG.acento);
+function aplicarTema(t){
+  const r = document.documentElement.style;
+  r.setProperty("--bg",t.bg); r.setProperty("--on",t.on); r.setProperty("--surf",t.surf); r.setProperty("--surf-ink",t.surfInk);
+  r.setProperty("--acc",t.acc); r.setProperty("--acc-ink",t.accInk);
+  r.colorScheme = t.on === "#FFFFFF" ? "dark" : "light";
+  let m = document.querySelector('meta[name="theme-color"]'); if (!m){ m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m); } m.content = t.bg;
+}
+aplicarTema(T);
+document.title = "Reserva en " + CFG.nombre;
+
+function icono(n){ n = n.toLowerCase();
+  if (/barba|bigote|afeit/.test(n)) return "🧔"; if (/tint|color|mecha|balay|decolor|rayo|luces/.test(n)) return "🎨";
+  if (/peinad|recog|evento|novia|xv/.test(n)) return "💇‍♀️"; if (/alaci|keratin|botox|tratam|hidrat/.test(n)) return "✨";
+  if (/lavad|masaje/.test(n)) return "🫧"; if (/niñ|infant/.test(n)) return "🧒"; if (/caballer|hombre|fade|degrad/.test(n)) return "💈";
+  return "✂️"; }
+const NEGOCIO = {
+  nombre: CFG.nombre, lugar: CFG.lugar, whatsapp: CFG.whatsapp, anticipo: CFG.anticipo, logo: CFG.logo,
+  abre: 10, cierra: 20, diasCerrado: [0], estilistas: CFG.estilistas,
+  servicios: CFG.servicios.map((x,i)=>({ id:"s"+i, nombre:x[0], min:x[1], precio:x[2], ic:icono(x[0]) }))
+};
+
+/* ===== Utilidades ===== */
+const KEY = "pelu-v1-" + CFG.nombre.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+const $app = document.getElementById("app"), $bar = document.getElementById("bar");
+const pad = n => String(n).padStart(2,"0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const fromIso = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const money = n => "$" + n.toLocaleString("es-MX");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const svcById = id => NEGOCIO.servicios.find(s => s.id === id);
+const SLOT = 30, NSLOTS = (NEGOCIO.cierra - NEGOCIO.abre) * 60 / SLOT;
+const slotsDe = min => Math.ceil(min / SLOT);
+const hora = s => { const m = NEGOCIO.abre*60 + s*SLOT; return `${Math.floor(m/60)}:${pad(m%60)}`; };
+const fmtDia = s => fromIso(s).toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long"});
+const fmtCorto = s => fromIso(s).toLocaleDateString("es-MX",{weekday:"short",day:"numeric"}).replace(".","");
+const hoy = iso(new Date()), manana = iso(addDays(new Date(),1));
+const EST = NEGOCIO.estilistas.length ? NEGOCIO.estilistas : ["Salón"];
+const usaEstilistas = NEGOCIO.estilistas.length > 1;
+
+function load(){ try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e){} return null; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(citas)); } catch(e){} }
+const svcN = i => "s" + Math.min(i, NEGOCIO.servicios.length-1);
+let citas = load() || [
+  { id:1, fecha:hoy, slot:2, servicio:svcN(1), est:EST[0], nombre:"Jorge P.", tel:"", anticipo:true, estado:"pendiente" },
+  { id:2, fecha:hoy, slot:6, servicio:svcN(0), est:EST[1%EST.length], nombre:"Valeria M.", tel:"", anticipo:false, estado:"pendiente" },
+  { id:3, fecha:hoy, slot:12, servicio:svcN(3), est:EST[2%EST.length], nombre:"Daniela S.", tel:"", anticipo:true, estado:"pendiente" },
+  { id:4, fecha:manana, slot:0, servicio:svcN(2), est:EST[0], nombre:"Ricardo L.", tel:"", anticipo:false, estado:"pendiente" },
+  { id:5, fecha:manana, slot:8, servicio:svcN(5), est:EST[1%EST.length], nombre:"Paola G.", tel:"", anticipo:true, estado:"pendiente" }
+];
+citas = citas.filter(c => svcById(c.servicio) && EST.includes(c.est));
+
+let paso = 1, sel = { servicio:null, est:null, fecha:null, slot:null, nombre:"", tel:"" };
+let ultima = null, filtro = "todos", dia = "hoy";
+
+function wa(num, text){ const n = (num||"").replace(/\D/g,""), t = encodeURIComponent(text);
+  if (n.length === 10) return `https://wa.me/52${n}?text=${t}`; if (n.length >= 11) return `https://wa.me/${n}?text=${t}`; return `https://wa.me/?text=${t}`; }
+
+/* Disponibilidad por estilista */
+function ocupado(fecha, est){
+  const set = new Set();
+  citas.filter(c=>c.fecha===fecha && c.est===est && c.estado!=="falto").forEach(c=>{ for (let i=0;i<slotsDe(svcById(c.servicio).min);i++) set.add(c.slot+i); });
+  const seed = fecha.split("-").reduce((a,b)=>a+Number(b),0) + est.length*3;
+  for (let s=0;s<NSLOTS;s++) if ((seed*5 + s*11) % 7 === 0) set.add(s);
+  return set;
+}
+function libreCon(fecha, s, min, est){
+  const n = slotsDe(min); if (s + n > NSLOTS) return false;
+  if (fecha === hoy){ const ahora = new Date(); if (NEGOCIO.abre*60 + s*SLOT <= ahora.getHours()*60 + ahora.getMinutes()) return false; }
+  const occ = ocupado(fecha, est); for (let i=0;i<n;i++) if (occ.has(s+i)) return false; return true;
+}
+function quienLibre(fecha, s, min, est){ if (est && est !== "*") return libreCon(fecha,s,min,est) ? est : null; return EST.find(e=>libreCon(fecha,s,min,e)) || null; }
+const datosOk = () => sel.nombre.trim().length>1 && sel.tel.replace(/\D/g,"").length>=10;
+
+/* ===== Encabezado común ===== */
+function cabecera(v){
+  const ini = esc((CFG.nombre.trim()[0]||"✂").toUpperCase());
+  const logo = NEGOCIO.logo ? `<div class="logo"><img src="${esc(NEGOCIO.logo)}" alt="Logo de ${esc(NEGOCIO.nombre)}" onerror="this.parentNode.textContent='${ini}'"></div>` : `<div class="logo" aria-hidden="true">${ini}</div>`;
+  const nav = v==="crear" ? "" : `<nav class="mode" aria-label="Vista"><a href="#reservar" ${v==="reservar"?'aria-current="page"':""}>Cliente</a><a href="#panel" ${v==="panel"?'aria-current="page"':""}>Panel</a></nav>`;
+  return `<header class="head">${logo}<div class="nm"><strong>${esc(NEGOCIO.nombre)}</strong><span>${esc(NEGOCIO.lugar)}</span></div>${nav}</header>`;
+}
+
+/* ===== Flujo de reserva por pasos ===== */
+const PASOS = usaEstilistas ? [1,2,3,4] : [1,3,4];
+function progreso(){ const idx = PASOS.indexOf(paso); return `<div class="prog" aria-label="Paso ${idx+1} de ${PASOS.length}" style="grid-template-columns:repeat(${PASOS.length},1fr)">${PASOS.map((_,i)=>`<i class="${i<=idx?"on":""}"></i>`).join("")}</div>`; }
+function atras(){ const idx = PASOS.indexOf(paso); return idx>0 ? `<button class="back" data-act="atras">← Atrás</button>` : ""; }
+
+function vistaReservar(){
+  if (ultima) return cabecera("reservar") + vistaListo();
+  const s = sel.servicio && svcById(sel.servicio);
+  let html = cabecera("reservar") + progreso() + atras();
+  if (paso===1){
+    html += `<p class="kick">Paso ${PASOS.indexOf(1)+1}</p><h1 class="q">¿Qué te hacemos hoy?</h1>
+    <div class="grid step-in">${NEGOCIO.servicios.map(x=>`
+      <button class="card" data-act="servicio" data-v="${x.id}" aria-pressed="${sel.servicio===x.id}">
+        <span class="ic" aria-hidden="true">${x.ic}</span><strong>${esc(x.nombre)}</strong><small>${x.min} min</small><span class="pr">${money(x.precio)}</span>
+      </button>`).join("")}</div>`;
+  } else if (paso===2){
+    html += `<p class="kick">Paso 2</p><h1 class="q">¿Con quién?</h1>
+    <div class="people step-in">
+      <button class="person" data-act="est" data-v="*" aria-pressed="${sel.est==="*"}"><span class="av" aria-hidden="true">★</span><span><strong>El que esté libre</strong><small>Más horarios disponibles</small></span></button>
+      ${EST.map(e=>`<button class="person" data-act="est" data-v="${esc(e)}" aria-pressed="${sel.est===e}"><span class="av" aria-hidden="true">${esc(e[0].toUpperCase())}</span><span><strong>${esc(e)}</strong><small>Estilista</small></span></button>`).join("")}
+    </div>`;
+  } else if (paso===3){
+    const dias = Array.from({length:14},(_,i)=>addDays(new Date(),i));
+    let t = `<p class="hint">Elige un día para ver los horarios.</p>`;
+    if (sel.fecha){
+      const arr = [];
+      for (let k=0;k<NSLOTS;k++){ const ok = !!quienLibre(sel.fecha,k,s.min,sel.est||"*");
+        arr.push(`<button class="time" data-act="slot" data-v="${k}" aria-pressed="${sel.slot===k}" ${ok?"":"disabled"} aria-label="${hora(k)}${ok?"":", ocupado"}">${hora(k)}</button>`); }
+      t = `<div class="times">${arr.join("")}</div><p class="hint">Tu servicio dura ${s.min} min${sel.est && sel.est!=="*" ? ` con ${esc(sel.est)}` : ""}.</p>`;
+    }
+    html += `<p class="kick">Paso ${PASOS.indexOf(3)+1}</p><h1 class="q">¿Cuándo vienes?</h1>
+    <div class="step-in"><div class="days">${dias.map(d=>{ const v = iso(d), cerrado = NEGOCIO.diasCerrado.includes(d.getDay());
+      const dn = v===hoy ? "Hoy" : v===manana ? "Mañana" : d.toLocaleDateString("es-MX",{weekday:"short"}).replace(".","");
+      return `<button class="day" data-act="fecha" data-v="${v}" aria-pressed="${sel.fecha===v}" ${cerrado?"disabled":""} aria-label="${fmtDia(v)}${cerrado?", cerrado":""}"><small>${dn}</small><strong>${d.getDate()}</strong></button>`; }).join("")}</div>
+    <p class="label">Horarios</p>${t}</div>`;
+  } else {
+    const quien = quienLibre(sel.fecha, sel.slot, s.min, sel.est||"*");
+    html += `<p class="kick">Último paso</p><h1 class="q">¿A nombre de quién?</h1>
+    <div class="form step-in">
+      <label for="nombre">Tu nombre</label><input id="nombre" data-field="nombre" autocomplete="name" placeholder="Ej. Ana López" value="${esc(sel.nombre)}">
+      <label for="tel">Tu WhatsApp</label><input id="tel" data-field="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos" value="${esc(sel.tel)}">
+      <div class="resume"><strong>${esc(s.nombre)}</strong>${usaEstilistas && quien ? ` con ${esc(quien)}` : ""}<br><span style="text-transform:capitalize">${fmtDia(sel.fecha)}</span>, ${hora(sel.slot)}${NEGOCIO.anticipo>0?`<br>Anticipo para apartar: <strong>${money(NEGOCIO.anticipo)}</strong>`:""}</div>
+    </div>`;
+  }
+  return html;
+}
+function barra(){
+  const s = sel.servicio && svcById(sel.servicio);
+  let sum = "", lbl = "Continuar", ok = false, act = "sig";
+  if (paso===1){ ok = !!s; sum = s ? `${s.nombre}, ${money(s.precio)}` : "Toca un servicio"; }
+  else if (paso===2){ ok = !!sel.est; sum = sel.est ? (sel.est==="*" ? "El que esté libre" : `Con ${sel.est}`) : "Elige con quién"; }
+  else if (paso===3){ ok = sel.fecha && sel.slot!==null; sum = sel.fecha ? (sel.slot!==null ? `${fmtCorto(sel.fecha)} a las ${hora(sel.slot)}` : fmtCorto(sel.fecha)) : "Elige día y hora"; }
+  else { ok = datosOk(); lbl = `Confirmar cita (${money(s.precio)})`; act = "confirmar"; sum = ok ? "Todo listo" : "Escribe tu nombre y WhatsApp"; }
+  return `<div class="in"><p class="sum">${esc(sum)}</p><button class="btn" data-act="${act}" ${ok?"":"disabled"}>${lbl} →</button></div>`;
+}
+function vistaListo(){
+  const c = ultima, s = svcById(c.servicio);
+  const txt = `Hola ${NEGOCIO.nombre} ✂️ Soy ${c.nombre}. Reservé ${s.nombre}${usaEstilistas?` con ${c.est}`:""} el ${fmtDia(c.fecha)} a las ${hora(c.slot)}.${NEGOCIO.anticipo>0?` Te envío mi comprobante del anticipo de ${money(NEGOCIO.anticipo)}.`:""}`;
+  const ini = new Date(fromIso(c.fecha).getTime() + (NEGOCIO.abre*60 + c.slot*SLOT)*60000), fin = new Date(ini.getTime() + s.min*60000);
+  const f = d => iso(d).replace(/-/g,"") + "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  const gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(s.nombre+" en "+NEGOCIO.nombre)}&dates=${f(ini)}/${f(fin)}&ctz=America/Mexico_City`;
+  return `<section class="done"><div class="big" aria-hidden="true">✓</div><h1>¡Listo, ${esc(c.nombre.split(" ")[0])}!</h1><p>Tu cita quedó apartada.</p></section>
+  <article class="pass"><div class="top"><strong>${esc(s.nombre)}</strong><span>${fmtDia(c.fecha)}, ${hora(c.slot)}</span></div>
+    <div class="rows">
+      ${usaEstilistas?`<div class="row"><span>Te atiende</span><strong>${esc(c.est)}</strong></div>`:""}
+      <div class="row"><span>Duración</span><strong>${s.min} min</strong></div>
+      ${NEGOCIO.anticipo>0?`<div class="row"><span>Anticipo</span><strong>${money(NEGOCIO.anticipo)}</strong></div>`:""}
+      <div class="row"><span>Total</span><strong>${money(s.precio)}</strong></div>
+    </div></article>
+  <a class="btn" href="${wa(NEGOCIO.whatsapp, txt)}" target="_blank" rel="noopener">${NEGOCIO.anticipo>0?"Enviar comprobante por WhatsApp":"Avisar por WhatsApp"}</a>
+  <a class="btn alt" href="${gcal}" target="_blank" rel="noopener">Agregar a mi calendario</a>
+  <button class="btn alt" data-act="otra">Reservar otra cita</button>`;
+}
+
+/* ===== Panel ===== */
+function vistaPanel(){
+  const fecha = dia==="hoy" ? hoy : manana;
+  let lista = citas.filter(c=>c.fecha===fecha).sort((a,b)=>a.slot-b.slot);
+  if (filtro!=="todos") lista = lista.filter(c=>c.est===filtro);
+  const deHoy = citas.filter(c=>c.fecha===hoy && c.estado!=="falto");
+  const ingresos = deHoy.reduce((t,c)=>t+svcById(c.servicio).precio,0);
+  const pend = citas.filter(c=>(c.fecha===hoy||c.fecha===manana) && !c.anticipo && c.estado!=="falto").length;
+  const items = lista.length ? lista.map(c=>{ const s = svcById(c.servicio);
+    const rec = `Hola ${c.nombre.split(" ")[0]} ✂️ Te recordamos tu cita de ${s.nombre} ${c.fecha===hoy?"hoy":"mañana"} a las ${hora(c.slot)} en ${NEGOCIO.nombre}. ¿Nos confirmas?`;
+    const est = c.estado==="llego" ? `<span class="tag">Llegó ✓</span>` : c.estado==="falto" ? `<span class="tag">No llegó</span>` : "";
+    return `<article class="appt"><div class="t">${hora(c.slot)}<small>${s.min} min</small></div>
+      <div class="w"><strong>${esc(c.nombre)}</strong><small>${esc(s.nombre)}${usaEstilistas?` con ${esc(c.est)}`:""}, ${money(s.precio)}</small>
+      <div class="tags">${NEGOCIO.anticipo>0?`<span class="tag">${c.anticipo?"Anticipo pagado":"Anticipo pendiente"}</span>`:""}${est}</div></div>
+      <div class="acts"><a class="mini main" href="${wa(c.tel, rec)}" target="_blank" rel="noopener">Recordar</a>
+      ${NEGOCIO.anticipo>0 && !c.anticipo?`<button class="mini" data-act="anticipo" data-v="${c.id}">Anticipo pagado</button>`:""}
+      ${c.estado==="pendiente"?`<button class="mini" data-act="llego" data-v="${c.id}">Llegó</button><button class="mini" data-act="falto" data-v="${c.id}">No llegó</button>`:""}</div></article>`;
+  }).join("") : `<div class="empty">No hay citas aquí todavía. Comparte tu link y deja que tus clientes reserven solos.</div>`;
+  return cabecera("panel") + `<p class="kick" style="text-transform:none;letter-spacing:0;font-size:14px;margin-bottom:14px">Tu día: <span style="text-transform:capitalize">${fmtDia(hoy)}</span></p>
+  <div class="stats"><div class="st"><strong>${money(ingresos)}</strong><small>Ingresos esperados hoy</small></div>
+    <div class="st"><strong>${deHoy.length}</strong><small>Citas hoy</small></div>
+    <div class="st"><strong>${NEGOCIO.anticipo>0?pend:EST.length}</strong><small>${NEGOCIO.anticipo>0?"Anticipos por cobrar":"Estilistas"}</small></div></div>
+  <div class="chips"><button class="chip" data-act="dia" data-v="hoy" aria-pressed="${dia==="hoy"}">Hoy</button><button class="chip" data-act="dia" data-v="manana" aria-pressed="${dia==="manana"}">Mañana</button>
+    ${usaEstilistas?`<button class="chip" data-act="filtro" data-v="todos" aria-pressed="${filtro==="todos"}">Todos</button>${EST.map(e=>`<button class="chip" data-act="filtro" data-v="${esc(e)}" aria-pressed="${filtro===e}">${esc(e)}</button>`).join("")}`:""}</div>
+  ${items}
+  <div class="share"><button class="btn" data-act="copiar">Copiar mi link de reservas</button></div>`;
+}
+
+/* ===== Generador (#crear) ===== */
+let gen = { n:"", l:"", i:"", w:"", a:"0", c:"2D5BFF", k:"", e:"Ana, Luis, Sofi", s:"Corte de dama, 60, 300\nCorte de caballero, 30, 180\nArreglo de barba, 30, 120\nTinte completo, 120, 900\nMechas o balayage, 180, 1500" };
+const FONDOS = ["2D5BFF","111111","FFFFFF","E11D48","FF6B00","FFD60A","16A34A","0EA5E9","7C3AED","EC4899","0F766E","F5E6D3"];
+const ACENTOS = ["","FFD60A","C6FF00","FF3B30","00E5FF","FF2E93","FFFFFF","111111"];
+function linkGen(){
+  const p = new URLSearchParams();
+  if (gen.n.trim()) p.set("n", gen.n.trim()); if (gen.l.trim()) p.set("l", gen.l.trim());
+  if (logoUrl(gen.i)) p.set("i", gen.i.trim()); if (gen.w.replace(/\D/g,"")) p.set("w", gen.w.replace(/\D/g,""));
+  if (gen.a!=="" && !isNaN(+gen.a) && +gen.a>0) p.set("a", String(Math.round(+gen.a)));
+  if (isHex(gen.c)) p.set("c", gen.c.toUpperCase()); if (isHex(gen.k)) p.set("k", gen.k.toUpperCase());
+  const e = gen.e.split(/[,\n]/).map(x=>x.trim().replace(/[|~]/g," ")).filter(Boolean); p.set("e", e.join("|"));
+  const sv = gen.s.split("\n").map(x=>x.split(",").map(y=>y.trim())).filter(x=>x[0] && +x[1]>0 && x[2]!==undefined && !isNaN(+x[2])).map(x=>`${x[0].replace(/[|~]/g," ")}~${Math.round(+x[1])}~${Math.round(+x[2])}`);
+  if (sv.length) p.set("s", sv.join("|"));
+  return location.origin + location.pathname + "?" + p.toString() + "#reservar";
+}
+const msgGen = l => `¡Hola! ✂️✨ Te armé un ejemplo de cómo se vería la agenda en línea de ${gen.n.trim()||"tu peluquería"}, para que tus clientes reserven solos, elijan estilista y no te dejen plantado:\n${l}\n\n1️⃣ Reserva una cita como si fueras tu cliente\n2️⃣ Luego toca "Panel" arriba para ver tu lado\n\n¿Qué te pareció? 🙌`;
+function previewHtml(){
+  const t = tema(isHex(gen.c)?gen.c:"2D5BFF", isHex(gen.k)?gen.k:"");
+  const msg = t.ajustado ? "⚠️ Ese color de botón casi no se ve sobre el fondo; la app usará uno que sí contrasta." : "✅ Buen contraste: todo se lee bien.";
+  return `<div class="preview" style="background:${t.bg};color:${t.on}"><strong style="font-weight:900;font-stretch:115%;font-size:20px">${esc(gen.n.trim()||"Tu peluquería")}</strong>
+    <div style="background:${t.surf};color:${t.surfInk};border-radius:14px;padding:12px;font-weight:700">✂️ Corte de dama, $300</div>
+    <div class="pb" style="background:${t.acc};color:${t.accInk}">Reservar →</div></div><p class="cstatus">${msg}</p>`;
+}
+function vistaCrear(){
+  const l = linkGen();
+  return `<header class="head"><div class="logo" aria-hidden="true">✂</div><div class="nm"><strong>Crear demo</strong><span>Peluquerías y barberías</span></div></header>
+  <h1 class="q" style="font-size:34px">Arma la agenda de tu cliente</h1>
+  <div class="gen">
+  <div class="form">
+    <label for="g-n">Nombre de la peluquería</label><input id="g-n" data-gen="n" placeholder="Ej. Barbería El Patrón" value="${esc(gen.n)}">
+    <label for="g-l">Descripción corta</label><input id="g-l" data-gen="l" placeholder="Ej. Cortes y color en Polanco" value="${esc(gen.l)}">
+    <label for="g-i">Logo (link de la imagen, opcional)</label><input id="g-i" data-gen="i" placeholder="https://i.postimg.cc/.../logo.png" value="${esc(gen.i)}">
+    <label for="g-w">WhatsApp del negocio (opcional)</label><input id="g-w" data-gen="w" inputmode="tel" placeholder="10 dígitos" value="${esc(gen.w)}">
+    <label for="g-a">Anticipo en pesos (0 si no cobra)</label><input id="g-a" data-gen="a" inputmode="numeric" value="${esc(gen.a)}">
+  </div>
+  <div class="form">
+    <label>Color de fondo</label>
+    <div class="sw">${FONDOS.map(c=>`<button data-act="gc" data-v="${c}" style="background:#${c}" aria-label="Fondo #${c}" aria-pressed="${gen.c.toUpperCase()===c}"></button>`).join("")}</div>
+    <div class="pick"><input type="color" data-gen="c" value="#${isHex(gen.c)?gen.c:"2D5BFF"}" aria-label="Elegir cualquier color de fondo"><input type="text" data-gen="ct" maxlength="7" placeholder="#2D5BFF" value="#${esc(gen.c)}" aria-label="Código de color de fondo"></div>
+    <label>Color de botones</label>
+    <div class="sw">${ACENTOS.map(c=>`<button data-act="gk" data-v="${c}" style="background:${c?"#"+c:"conic-gradient(red,yellow,lime,cyan,blue,magenta,red)"}" aria-label="${c?"Botón #"+c:"Automático"}" aria-pressed="${gen.k.toUpperCase()===c}"></button>`).join("")}</div>
+    <div class="pick"><input type="color" data-gen="k" value="#${isHex(gen.k)?gen.k:"FFD60A"}" aria-label="Elegir cualquier color de botón"><input type="text" data-gen="kt" maxlength="7" placeholder="Automático" value="${gen.k?"#"+esc(gen.k):""}" aria-label="Código de color de botón"></div>
+    <div id="g-prev">${previewHtml()}</div>
+  </div>
+  <div class="form">
+    <label for="g-e">Estilistas (separados por coma, vacío si es uno solo)</label><input id="g-e" data-gen="e" placeholder="Ej. Ana, Luis" value="${esc(gen.e)}">
+    <label for="g-s">Servicios (uno por línea: nombre, minutos, precio)</label><textarea id="g-s" data-gen="s">${esc(gen.s)}</textarea>
+    <label>Link de su demo</label><div class="out" id="g-out">${esc(l)}</div>
+    <a class="btn" id="g-wa" href="${wa(gen.w, msgGen(l))}" target="_blank" rel="noopener">Mandar por WhatsApp</a>
+    <button class="btn alt" data-act="gcopiar" style="color:inherit;border-color:currentColor">Copiar link</button>
+    <a class="btn alt" id="g-ver" href="${esc(l)}" target="_blank" rel="noopener" style="color:inherit;border-color:currentColor">Ver cómo queda</a>
+  </div></div>`;
+}
+function refrescarGen(){
+  const l = linkGen();
+  const o = document.getElementById("g-out"); if (o) o.textContent = l;
+  const w = document.getElementById("g-wa"); if (w) w.href = wa(gen.w, msgGen(l));
+  const v = document.getElementById("g-ver"); if (v) v.href = l;
+  const p = document.getElementById("g-prev"); if (p) p.innerHTML = previewHtml();
+}
+
+/* ===== Render y eventos ===== */
+function vista(){ return location.hash==="#panel" ? "panel" : location.hash==="#crear" ? "crear" : "reservar"; }
+function render(){
+  const v = vista();
+  $app.innerHTML = v==="panel" ? vistaPanel() : v==="crear" ? vistaCrear() : vistaReservar();
+  const show = v==="reservar" && !ultima; $bar.hidden = !show; if (show) $bar.innerHTML = barra();
+}
+function toast(m){ const t = document.getElementById("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("show"),2200); }
+function siguiente(){ const i = PASOS.indexOf(paso); if (i < PASOS.length-1){ paso = PASOS[i+1]; render(); window.scrollTo(0,0); } }
+let avanceT = null;
+function auto(){ clearTimeout(avanceT); avanceT = setTimeout(siguiente, 260); }
+
+function onClick(e){
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, v = b.dataset.v;
+  if (a==="servicio"){ sel.servicio = v; sel.slot = null; render(); auto(); return; }
+  if (a==="est"){ sel.est = v; sel.slot = null; render(); auto(); return; }
+  if (a==="fecha"){ sel.fecha = v; sel.slot = null; }
+  else if (a==="slot"){ sel.slot = Number(v); render(); auto(); return; }
+  else if (a==="sig"){ siguiente(); return; }
+  else if (a==="atras"){ const i = PASOS.indexOf(paso); if (i>0) paso = PASOS[i-1]; window.scrollTo(0,0); }
+  else if (a==="confirmar"){
+    if (!datosOk()) return; const s = svcById(sel.servicio);
+    const quien = quienLibre(sel.fecha, sel.slot, s.min, sel.est||"*"); if (!quien){ toast("Ese horario se acaba de ocupar, elige otro"); paso = 3; render(); return; }
+    const c = { id:Date.now(), fecha:sel.fecha, slot:sel.slot, servicio:sel.servicio, est:quien, nombre:sel.nombre.trim(), tel:sel.tel, anticipo:false, estado:"pendiente" };
+    citas.push(c); save(); ultima = c; sel = { servicio:null, est:null, fecha:null, slot:null, nombre:"", tel:"" }; paso = 1; window.scrollTo(0,0);
+  }
+  else if (a==="otra"){ ultima = null; }
+  else if (a==="dia"){ dia = v; }
+  else if (a==="filtro"){ filtro = v; }
+  else if (a==="anticipo"){ const c = citas.find(x=>x.id==v); if (c){ c.anticipo = true; save(); toast("Anticipo registrado"); } }
+  else if (a==="llego"){ const c = citas.find(x=>x.id==v); if (c){ c.estado = "llego"; save(); } }
+  else if (a==="falto"){ const c = citas.find(x=>x.id==v); if (c){ c.estado = "falto"; save(); toast("Horario liberado"); } }
+  else if (a==="gc"){ gen.c = v; }
+  else if (a==="gk"){ gen.k = v; }
+  else if (a==="copiar" || a==="gcopiar"){
+    const url = a==="copiar" ? location.href.split("#")[0] + "#reservar" : linkGen();
+    try { navigator.clipboard.writeText(url).then(()=>toast("Link copiado"),()=>toast("Cópialo a mano")); } catch(err){ toast("Cópialo a mano"); }
+    return;
+  }
+  const y = window.scrollY; render(); if (a!=="confirmar" && a!=="atras") window.scrollTo(0,y);
+}
+$app.addEventListener("click", onClick); $bar.addEventListener("click", onClick);
+$app.addEventListener("input", e=>{
+  const g = e.target.dataset.gen;
+  if (g){
+    let val = e.target.value;
+    if (g==="c" || g==="k"){ gen[g] = val.replace("#","").toUpperCase(); const t = document.querySelector(`[data-gen="${g}t"]`); if (t) t.value = "#" + gen[g]; }
+    else if (g==="ct" || g==="kt"){ const h = val.replace("#","").trim(); const key = g[0];
+      if (isHex(h)){ gen[key] = h.toUpperCase(); const c = document.querySelector(`[data-gen="${key}"]`); if (c) c.value = "#" + h; }
+      else if (key==="k" && h===""){ gen.k = ""; } }
+    else gen[g] = val;
+    $app.querySelectorAll(`[data-act="g${g[0]}"]`).forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.v===gen[g[0]])));
+    refrescarGen(); return;
+  }
+  const f = e.target.dataset.field; if (!f) return; sel[f] = e.target.value; if (!$bar.hidden) $bar.innerHTML = barra();
+});
+window.addEventListener("hashchange", ()=>{ ultima = null; render(); window.scrollTo(0,0); });
+render();
+</script>
+</body>
+</html>
