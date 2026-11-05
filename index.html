@@ -232,6 +232,12 @@ body.pro .wrap{padding-top:0}
 .b2.pri{background:var(--pacc);color:var(--pacc-ink);border-color:transparent}
 .pempty{padding:28px 16px;text-align:center;color:var(--pm);font-size:14.5px}
 .pbtn{display:flex;align-items:center;justify-content:center;width:100%;padding:14px;border-radius:12px;border:0;background:var(--pacc);color:var(--pacc-ink);font-weight:800;font-size:15.5px;cursor:pointer}
+.up{display:flex;align-items:center;gap:14px;margin:0 0 12px}
+.up img{width:68px;height:68px;border-radius:50%;object-fit:contain;background:#fff;border:2px solid currentColor;flex:none}
+.up .ph{width:68px;height:68px;border-radius:50%;border:2px dashed currentColor;display:grid;place-items:center;font-size:24px;opacity:.55;flex:none}
+.upbtn{display:inline-flex !important;align-items:center;gap:6px;margin:0 !important;padding:11px 16px;border-radius:12px;border:2px solid currentColor;font-weight:800 !important;cursor:pointer}
+.upx{background:none;border:0;padding:6px 0 0;margin-left:12px;font-weight:700;text-decoration:underline;cursor:pointer;color:inherit}
+.minil{font-weight:600 !important;font-size:13.5px !important;opacity:.75}
 .toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--surf);color:var(--surf-ink);padding:11px 18px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .step-in{animation:in .28s ease-out both}
@@ -291,6 +297,37 @@ function logoUrl(v){ v = (v||"").trim(); if (!v || v.length > 400) return "";
   if (/^https:\/\/[^\s"'<>]+$/i.test(v)) return v;
   if (/^[\w.-]+\.(png|jpe?g|webp|gif|svg)$/i.test(v)) return "logos/" + v; return ""; }
 const isHex = v => /^[0-9a-fA-F]{6}$/.test(v||"");
+/* ===== Logo subido: se comprime y viaja dentro del link ===== */
+function logoData(v){
+  if (!v || v.length > 9000 || !/^[wj]\.[A-Za-z0-9_-]+$/.test(v)) return "";
+  let b = v.slice(2).replace(/-/g,"+").replace(/_/g,"/"); while (b.length % 4) b += "=";
+  return `data:image/${v[0]==="w"?"webp":"jpeg"};base64,${b}`;
+}
+async function comprimirLogo(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok,err)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = err; i.src = url; });
+    const S = 128, cv = document.createElement("canvas"); cv.width = cv.height = S;
+    const cx = cv.getContext("2d"); cx.fillStyle = "#FFFFFF"; cx.fillRect(0,0,S,S);
+    const w = img.naturalWidth, h = img.naturalHeight, k = Math.min(S*0.92/w, S*0.92/h);
+    cx.imageSmoothingQuality = "high";
+    cx.drawImage(img, (S-w*k)/2, (S-h*k)/2, w*k, h*k);
+    for (const q of [.85,.72,.6,.48,.36]){
+      for (const [tipo,t] of [["image/webp","w"],["image/jpeg","j"]]){
+        const d = cv.toDataURL(tipo, q);
+        if (!d.startsWith("data:"+tipo)) continue;
+        const b = d.split(",")[1].replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+        if (b.length <= 6000) return t + "." + b;
+      }
+    }
+    return "";
+  } finally { URL.revokeObjectURL(url); }
+}
+function upHtml(){
+  const src = gen.lg ? logoData(gen.lg) : logoUrl(gen.i);
+  return `${src?`<img src="${esc(src)}" alt="Logo" onerror="this.style.display='none'">`:`<span class="ph" aria-hidden="true">🖼️</span>`}
+    <div><label class="upbtn" for="g-file">📷 ${src?"Cambiar logo":"Subir logo"}</label>${src?`<button class="upx" data-act="gquitar">Quitar</button>`:""}</div>`;
+}
 function leerConfig(){
   const p = new URLSearchParams(location.search), cfg = JSON.parse(JSON.stringify(DEFAULT));
   if (p.get("n")) cfg.nombre = p.get("n").slice(0,40);
@@ -300,6 +337,7 @@ function leerConfig(){
   if (isHex(p.get("c"))) cfg.color = p.get("c");
   if (isHex(p.get("k"))) cfg.acento = p.get("k");
   cfg.logo = logoUrl(p.get("i"));
+  const lgd = logoData(p.get("lg")); if (lgd) cfg.logo = lgd;
   cfg.foto = logoUrl(p.get("f"));
   if (p.get("e") !== null){ const e = p.get("e").split("|").map(x=>x.trim().slice(0,20)).filter(Boolean).slice(0,8); cfg.estilistas = e; }
   if (p.get("s")){ const arr = p.get("s").split("|").map(x=>x.split("~")).filter(x=>x[0] && +x[1]>0 && +x[2]>=0)
@@ -552,13 +590,13 @@ function vistaPanel(){
 }
 
 /* ===== Generador (#crear) ===== */
-let gen = { n:"", l:"", i:"", f:"", w:"", a:"0", c:"2D5BFF", k:"", e:"Ana, Luis, Sofi", s:"Corte de dama, 60, 300\nCorte de caballero, 30, 180\nArreglo de barba, 30, 120\nTinte completo, 120, 900\nMechas o balayage, 180, 1500" };
+let gen = { lg:"", n:"", l:"", i:"", f:"", w:"", a:"0", c:"2D5BFF", k:"", e:"Ana, Luis, Sofi", s:"Corte de dama, 60, 300\nCorte de caballero, 30, 180\nArreglo de barba, 30, 120\nTinte completo, 120, 900\nMechas o balayage, 180, 1500" };
 const FONDOS = ["2D5BFF","111111","FFFFFF","E11D48","FF6B00","FFD60A","16A34A","0EA5E9","7C3AED","EC4899","0F766E","F5E6D3"];
 const ACENTOS = ["","FFD60A","C6FF00","FF3B30","00E5FF","FF2E93","FFFFFF","111111"];
 function linkGen(){
   const p = new URLSearchParams();
   if (gen.n.trim()) p.set("n", gen.n.trim()); if (gen.l.trim()) p.set("l", gen.l.trim());
-  if (logoUrl(gen.i)) p.set("i", gen.i.trim()); if (logoUrl(gen.f)) p.set("f", gen.f.trim()); if (gen.w.replace(/\D/g,"")) p.set("w", gen.w.replace(/\D/g,""));
+  if (gen.lg) p.set("lg", gen.lg); else if (logoUrl(gen.i)) p.set("i", gen.i.trim()); if (logoUrl(gen.f)) p.set("f", gen.f.trim()); if (gen.w.replace(/\D/g,"")) p.set("w", gen.w.replace(/\D/g,""));
   if (gen.a!=="" && !isNaN(+gen.a) && +gen.a>0) p.set("a", String(Math.round(+gen.a)));
   if (isHex(gen.c)) p.set("c", gen.c.toUpperCase()); if (isHex(gen.k)) p.set("k", gen.k.toUpperCase());
   const e = gen.e.split(/[,\n]/).map(x=>x.trim().replace(/[|~]/g," ")).filter(Boolean); p.set("e", e.join("|"));
@@ -582,7 +620,11 @@ function vistaCrear(){
   <div class="form">
     <label for="g-n">Nombre de la peluquería</label><input id="g-n" data-gen="n" placeholder="Ej. Barbería El Patrón" value="${esc(gen.n)}">
     <label for="g-l">Descripción corta</label><input id="g-l" data-gen="l" placeholder="Ej. Cortes y color en Polanco" value="${esc(gen.l)}">
-    <label for="g-i">Logo (link de la imagen, opcional)</label><input id="g-i" data-gen="i" placeholder="https://i.postimg.cc/.../logo.png" value="${esc(gen.i)}">
+    <label>Logo del negocio</label>
+  <div class="up" id="g-up">${upHtml()}</div>
+  <input id="g-file" type="file" accept="image/*" style="display:none">
+  <label class="minil" for="g-i">…o pega el link de una imagen</label>
+  <input id="g-i" data-gen="i" placeholder="https://..." value="${esc(gen.i)}">
     <label for="g-f">Foto del estudio (link de la imagen, opcional)</label><input id="g-f" data-gen="f" placeholder="https://i.postimg.cc/.../local.jpg" value="${esc(gen.f)}">
     <div id="g-fprev" style="${logoUrl(gen.f)?"":"display:none;"}height:120px;border-radius:14px;margin:-4px 0 14px;background:#ddd center/cover no-repeat;background-image:url('${esc(logoUrl(gen.f))}')"></div>
     <label for="g-w">WhatsApp del negocio (opcional)</label><input id="g-w" data-gen="w" inputmode="tel" placeholder="10 dígitos" value="${esc(gen.w)}">
@@ -612,6 +654,7 @@ function refrescarGen(){
   const w = document.getElementById("g-wa"); if (w) w.href = wa(gen.w, msgGen(l));
   const v = document.getElementById("g-ver"); if (v) v.href = l;
   const p = document.getElementById("g-prev"); if (p) p.innerHTML = previewHtml();
+  const up = document.getElementById("g-up"); if (up) up.innerHTML = upHtml();
   const fp = document.getElementById("g-fprev"); if (fp){ const u = logoUrl(gen.f); fp.style.display = u ? "" : "none"; if (u) fp.style.backgroundImage = `url('${u}')`; }
 }
 
@@ -651,6 +694,7 @@ function onClick(e){
   else if (a==="llego"){ const c = citas.find(x=>x.id==v); if (c){ c.estado = "llego"; save(); } }
   else if (a==="falto"){ const c = citas.find(x=>x.id==v); if (c){ c.estado = "falto"; save(); toast("Horario liberado"); } }
   else if (a==="gc"){ gen.c = v; }
+  else if (a==="gquitar"){ gen.lg = ""; gen.i = ""; }
   else if (a==="gk"){ gen.k = v; }
   else if (a==="copiar" || a==="gcopiar"){
     const url = a==="copiar" ? location.href.split("#")[0] + "#reservar" : linkGen();
@@ -669,10 +713,18 @@ $app.addEventListener("input", e=>{
       if (isHex(h)){ gen[key] = h.toUpperCase(); const c = document.querySelector(`[data-gen="${key}"]`); if (c) c.value = "#" + h; }
       else if (key==="k" && h===""){ gen.k = ""; } }
     else gen[g] = val;
+    if (g==="i") gen.lg = "";
     $app.querySelectorAll(`[data-act="g${g[0]}"]`).forEach(x=>x.setAttribute("aria-pressed", String(x.dataset.v===gen[g[0]])));
     refrescarGen(); return;
   }
   const f = e.target.dataset.field; if (!f) return; sel[f] = e.target.value; if (!$bar.hidden) $bar.innerHTML = barra();
+});
+$app.addEventListener("change", async e=>{
+  if (e.target.id !== "g-file" || !e.target.files || !e.target.files[0]) return;
+  toast("Procesando logo…");
+  try { const r = await comprimirLogo(e.target.files[0]); if (!r) throw new Error("grande"); gen.lg = r; refrescarGen(); toast("Logo listo ✅"); }
+  catch(err){ toast("No pude leer esa imagen. Prueba con JPG o PNG"); }
+  e.target.value = "";
 });
 window.addEventListener("hashchange", ()=>{ ultima = null; render(); window.scrollTo(0,0); });
 render();
