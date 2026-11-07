@@ -840,7 +840,7 @@ function vAjustes(){
     <div class="copy">${esc(link)}</div>
     <div class="row2"><button class="btn" data-act="copiar">Copiar link</button><a class="btn soft" href="${wa("", msg)}" target="_blank" rel="noopener">Compartir</a></div></div>
   <div class="box"><h4>Incluido en tu agenda</h4><p style="margin:0">✓ Tu logo y tus colores<br>✓ Calendario hasta 3 años adelante<br>✓ Sin dobles reservas<br>✓ Recordatorios por WhatsApp en un toque<br>✓ Cartera de clientas con historial y respaldo en Excel<br>✓ Precios, servicios y horario editables cuando quieras<br>✓ Código QR para tu mostrador y tus historias</p></div>
-  ${VENDEDOR_WA?`<a class="btn" href="${wa(VENDEDOR_WA, `Hola 👋 Vi la demo de la agenda en línea de ${CFG.nombre} y quiero la mía.`)}" target="_blank" rel="noopener">Quiero mi agenda</a>`:""}
+  ${VENDEDOR_WA?`<a class="btn" href="${wa(VENDEDOR_WA, "Si me gustó la Demo de Agenda App, ¿cómo obtengo la mía?")}" target="_blank" rel="noopener">Quiero mi agenda</a>`:""}
   <button class="btn soft" data-act="reiniciar">Reiniciar la demo</button>
   <p class="foot">Agenda en línea por Distrito ADS</p>`;
 }
