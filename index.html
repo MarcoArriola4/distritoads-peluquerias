@@ -296,7 +296,7 @@ textarea{min-height:90px;line-height:1.5;resize:vertical}
    Las citas de la demo se guardan solo en este navegador.
    ===================================================================== */
 const NICHO = "pelu";
-const VENDEDOR_WA = "";            // tu WhatsApp para el botón "Quiero mi agenda" (vacío = se oculta)
+const VENDEDOR_WA = "5527982357";  // tu WhatsApp para el botón "Quiero mi agenda" (vacío = se oculta)
 const ES_PELU = NICHO === "pelu";
 const DEFAULT = ES_PELU ? {
   nombre:"Navaja & Tijera", lugar:"Peluquería y barbería", whatsapp:"", anticipo:0, color:"C8A46A", tema:"o",
@@ -851,19 +851,49 @@ function vAjustes(){
 let gen = { lg:"", i:"", f:"", n:"", l:"", w:"", a: ES_PELU ? "0" : "100", c: DEFAULT.color, t:"o", e: ES_PELU ? "Ana, Luis, Sofi" : "",
   s: DEFAULT.servicios.map(x=>x.join(", ")).join("\n") };
 const PALETA = ["D9B24A","E0A3A0","C8A46A","B76E79","E8B4C8","C9A0DC","8FB3D9","7FC8A9","FF2E88","FF7A45","2D5BFF","111111"];
+/* ---------- Logo: acepta cualquier formato (PNG, JPG, WEBP, GIF, SVG, AVIF, BMP, ICO, HEIC de iPhone, TIFF) ---------- */
+const cargarScript = src => new Promise((ok, err) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = err; document.head.appendChild(sc); });
+async function decodificar(blob){
+  if (window.createImageBitmap){ try { return await createImageBitmap(blob); } catch(_){} }
+  const url = URL.createObjectURL(blob);
+  try { return await new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = err; i.src = url; }); }
+  finally { setTimeout(() => URL.revokeObjectURL(url), 2000); }
+}
+async function firma(file){ const b = new Uint8Array(await file.slice(0, 16).arrayBuffer()); return String.fromCharCode(...b); }
+async function cargarImagen(file){
+  const nombre = (file.name||"").toLowerCase(), tipo = (file.type||"").toLowerCase(), f = await firma(file);
+  const esHeic = /heic|heif/.test(tipo) || /\.(heic|heif)$/.test(nombre) || /ftyp(heic|heix|hevc|mif1|msf1|heis)/.test(f);
+  const esTiff = /tiff/.test(tipo) || /\.tiff?$/.test(nombre) || f.startsWith("II*\u0000") || f.startsWith("MM\u0000*");
+  if (!esHeic && !esTiff){ try { return await decodificar(file); } catch(_){} }
+  if (esHeic){
+    try { return await decodificar(file); } catch(_){}              // Safari ya lo abre solo
+    if (!window.heic2any) await cargarScript("https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js");
+    let out = await window.heic2any({ blob:file, toType:"image/jpeg", quality:.92 }); if (Array.isArray(out)) out = out[0];
+    return await decodificar(out);
+  }
+  if (esTiff){
+    try { return await decodificar(file); } catch(_){}
+    if (!window.UTIF) await cargarScript("https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js");
+    const buf = await file.arrayBuffer(), ifds = UTIF.decode(buf); UTIF.decodeImage(buf, ifds[0]);
+    const rgba = UTIF.toRGBA8(ifds[0]), cv = document.createElement("canvas"); cv.width = ifds[0].width; cv.height = ifds[0].height;
+    cv.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer, 0, cv.width*cv.height*4), cv.width, cv.height), 0, 0);
+    return cv;
+  }
+  throw new Error("formato");
+}
 async function comprimirLogo(file){
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise((ok,err)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = err; i.src = url; });
-    const S = 128, cv = document.createElement("canvas"); cv.width = cv.height = S;
+  const img = await cargarImagen(file);
+  const w = img.naturalWidth || img.width || 512, h = img.naturalHeight || img.height || 512;
+  for (const S of [128, 112, 96]){
+    const cv = document.createElement("canvas"); cv.width = cv.height = S;
     const cx = cv.getContext("2d"); cx.fillStyle = "#FFFFFF"; cx.fillRect(0,0,S,S);
-    const w = img.naturalWidth, h = img.naturalHeight, k = Math.max(S/w, S/h);   // llena el círculo
+    const k = Math.max(S/w, S/h);                                   // llena el círculo
     cx.imageSmoothingQuality = "high"; cx.drawImage(img, (S-w*k)/2, (S-h*k)/2, w*k, h*k);
     for (const q of [.85,.72,.6,.48,.36]) for (const [tipo,t] of [["image/webp","w"],["image/jpeg","j"]]){
       const d = cv.toDataURL(tipo, q); if (!d.startsWith("data:"+tipo)) continue;
       const b = d.split(",")[1].replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); if (b.length <= 6000) return t + "." + b; }
-    return "";
-  } finally { URL.revokeObjectURL(url); }
+  }
+  return "";
 }
 function linkGen(){
   const p = new URLSearchParams();
@@ -889,7 +919,7 @@ function vCrear(){
   <div class="phone"><iframe id="g-prev" title="Vista previa" src="${esc(link)}"></iframe></div>
   <label for="g-n">Nombre del negocio</label><input id="g-n" data-gen="n" maxlength="40" placeholder="${ES_PELU?"Ej. Barbería El Patrón":"Ej. Bella Nails"}" value="${esc(gen.n)}">
   <label for="g-l">Descripción corta</label><input id="g-l" data-gen="l" maxlength="60" placeholder="${ES_PELU?"Ej. Cortes y barba en Navojoa":"Ej. Uñas y pestañas en Obregón"}" value="${esc(gen.l)}">
-  <label>Logo</label><div class="up" id="g-up">${upHtml()}</div><input id="g-file" type="file" accept="image/*" hidden>
+  <label>Logo</label><div class="up" id="g-up">${upHtml()}</div><input id="g-file" type="file" accept="image/*,.heic,.heif,.tif,.tiff,.svg,.webp,.avif,.bmp,.ico" hidden>
   <label class="minil" for="g-i">…o pega el link de una imagen</label><input id="g-i" data-gen="i" placeholder="https://..." value="${esc(gen.i)}">
   <label class="minil" for="g-f">Foto de portada (opcional, link de imagen)</label><input id="g-f" data-gen="f" placeholder="https://..." value="${esc(gen.f)}">
   <label>Color de la marca (tómalo de su logo)</label>
@@ -1000,7 +1030,8 @@ document.addEventListener("change", async e => {
   if (e.target.matches("[data-mes]")){ if (vista()==="panel"){ mesP = e.target.value; fecha = primerDia(mesP); repintarPanel(); } else { mesC = e.target.value; const y = scrollY; pintar(); scrollTo(0,y); } return; }
   const row = e.target.closest(".srow"); if (row){ row.querySelector('[data-act="gsvc"]').hidden = false; return; }
   if (e.target.id === "g-file" && e.target.files && e.target.files[0]){ toast("Procesando logo…");
-    try { const r = await comprimirLogo(e.target.files[0]); if (!r) throw 0; gen.lg = r; refrescarGen(); toast("Logo listo ✅"); } catch(_){ toast("No pude leer esa imagen. Prueba con JPG o PNG"); }
+    try { const r = await comprimirLogo(e.target.files[0]); if (!r) throw 0; gen.lg = r; refrescarGen(); toast("Logo listo ✅"); }
+    catch(_){ toast("No pude abrir ese archivo. Toma una captura de pantalla del logo y súbela."); }
     e.target.value = ""; }
 });
 document.addEventListener("submit", e => {
